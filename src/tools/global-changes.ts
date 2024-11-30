@@ -16,6 +16,8 @@ import {
     isColorLight
 } from './utils.ts';
 
+import {checkConditionsMet, validateConditionalConfig, ensureArray} from './validate-condition.ts';
+
 export function changeState(context) {
     const state = context._hass.states[context.config.entity];
     const attribute = getAttribute(context, context.config.attribute, context.config.entity);
@@ -390,6 +392,17 @@ export function changeSubButtonState(context, container = context.content, appen
                 subButtonElement.dropdownArrow.classList.remove('no-icon-select-arrow');             
             }
         }
+
+        //Check visibility Conditions
+        const visibilityConditions = subButton.visibility;
+        if (visibilityConditions != undefined){
+            const visibilityConditions_array = ensureArray(visibilityConditions);
+            if(validateConditionalConfig(visibilityConditions_array)){
+                const is_visible= checkConditionsMet(visibilityConditions_array,context._hass);
+                !is_visible ? subButtonElement.classList.add('hidden') : subButtonElement.classList.remove('hidden');
+            }
+        }
+
     });
 
     // Update context.previousValues with current subButtons
