@@ -2,7 +2,7 @@ body:
   - type: textarea
     attributes:
       label: Goal
-      description: "What are you trying to achieve? Provide explanatory images if possible/needed.
+      description: "What are you trying to achieve? Provide explanatory images if possible/needed."
       required: true
 
   - type: textarea
