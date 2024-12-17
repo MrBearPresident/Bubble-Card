@@ -2,8 +2,7 @@ body:
   - type: textarea
     attributes:
       label: Goal
-      description: "What are you trying to achieve? Explanatory images can be added in the first comment on your post."
-    validations:
+      description: "What are you trying to achieve? Provide explanatory images if possible/needed.
       required: true
 
   - type: textarea
@@ -32,6 +31,7 @@ body:
       required: false
 
   - type: checkboxes
+    id: Documentation
     attributes:
       label: Read the documentation
       description: "Reading the documentation before asking a question saves time by providing immediate answers to common issues, helping you understand the basics and resolve problems independently. It also allows you to ask more informed, specific questions, increasing the likelihood of getting effective help."
@@ -42,8 +42,8 @@ body:
 
   - type: markdown
     attributes:
-      value: "<sup>[Documentation](https://github.com/Clooos/Bubble-Card?tab=readme-ov-file#table-of-contents)/[Examples](https://github.com/Clooos/Bubble-Card/discussions/categories/share-your-custom-styles-templates-and-dashboards)</sup>"
-
+      value: "<sup>[Documentation](https://github.com/Clooos/Bubble-Card?tab=readme-ov-file#table-of-contents) / [Examples](https://github.com/Clooos/Bubble-Card/discussions/categories/share-your-custom-styles-templates-and-dashboards)</sup>"
+ 
   - type: markdown
     attributes:
       value: |
