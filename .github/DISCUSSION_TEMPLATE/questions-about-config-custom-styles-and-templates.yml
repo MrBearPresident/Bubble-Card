@@ -3,6 +3,7 @@ body:
     attributes:
       label: Goal
       description: "What are you trying to achieve? Provide explanatory images if possible/needed."
+    validations:
       required: true
 
   - type: textarea
