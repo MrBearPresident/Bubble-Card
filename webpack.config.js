@@ -24,7 +24,8 @@ module.exports = [
       'bubble-pop-up-fix': './src/bubble-pop-up-fix.ts'
     },
     output: {
-      path: path.resolve('//hercules/C - Docker/30-Home-Assistent/Config/www/community/Bubble-Card'),
+      //path: path.resolve('//hercules/C - Docker/30-Home-Assistent/Config/www/community/Bubble-Card'),
+      path: path.resolve('//hercules/C - Docker/70-Dev_Home-Assistant/Config/www'),
       filename: '[name].js'
     }
   }
