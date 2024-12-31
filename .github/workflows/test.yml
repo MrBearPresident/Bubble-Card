@@ -63,4 +63,4 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         body: "This discussion has been inactive for over 60 seconds. Please update with any additional information if your question hasn't been resolved."
         discussion-id: ${{ matrix.discussion_id }}
-        client-mutation-id: ${{ github.run_id }}-${{ matrix.discussion_id }}
+        client-mutation-id: "1234"
