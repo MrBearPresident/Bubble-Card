@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-
+  
     - name: Find Inactive Discussions
       id: find
       env:
@@ -44,7 +44,7 @@ jobs:
         
         # Process discussions and create matrix output
         echo "matrix=$(cat discussions.json | \
-          jq --arg category \"$CATEGORY_NAME\" -c '
+          jq --arg category "$CATEGORY_NAME" -c '
             .data.repository.discussions.nodes | 
             map(select(.category.name == $category)) | 
             map(select((now - (.updatedAt | fromdateiso8601)) > 60)) | 
