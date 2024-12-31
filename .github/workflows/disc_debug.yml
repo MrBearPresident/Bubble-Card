@@ -16,7 +16,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Define the category slug
-        CATEGORY_NAME="questions-about-config-custom-styles-and-templates"
+        CATEGORY_NAME="Questions about config, custom styles and templates"
 
         # Fetch and debug discussions
         gh api graphql -f query='
@@ -39,6 +39,10 @@ jobs:
               }
             }
           }
-        }' -f owner="MrBearPresident" -f repo="Bubble-Card" \
-        jq -r '.data.repository.discussionCategory.discussions.nodes[] | 
-              (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
+        }' -f owner="MrBearPresident" -f repo="Bubble-Card" > discussions.json
+
+        # Process and filter discussions using jq
+        cat discussions.json | \
+        jq --arg category "$CATEGORY_NAME" -r '.data.repository.discussions.nodes[] | 
+            select(.category.name == $category) | 
+            (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
