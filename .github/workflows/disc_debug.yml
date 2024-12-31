@@ -22,8 +22,7 @@ jobs:
         gh api graphql -f query='
         query($owner: String!, $repo: String!, $category: String!) {
           repository(owner: $owner, name: $repo) {
-            discussionCategory(slug: $category) {
-              discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+            discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}, categorySlug: $categorySlug) {
                 nodes {
                   id
                   title
@@ -34,7 +33,7 @@ jobs:
                       name
                     }
                   }
-                }
+              
               }
             }
           }
