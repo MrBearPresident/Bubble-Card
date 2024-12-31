@@ -20,23 +20,25 @@ jobs:
 
         # Fetch and debug discussions
         gh api graphql -f query='
-        query($owner: String!, $repo: String!, $category: String!) {
+        query($owner: String!, $repo: String!) {
           repository(owner: $owner, name: $repo) {
-            discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}, categorySlug: $categorySlug) {
-                nodes {
-                  id
-                  title
-                  url
-                  updatedAt
-                  labels(first: 10) {
-                    nodes {
-                      name
-                    }
+            discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+              nodes {
+                id
+                title
+                url
+                updatedAt
+                category {
+                  name
+                }
+                labels(first: 10) {
+                  nodes {
+                    name
                   }
-              
+                }
               }
             }
           }
-        }' -f owner="MrBearPresident" -f repo="Bubble-Card" -f category="$CATEGORY_NAME" | \
+        }' -f owner="MrBearPresident" -f repo="Bubble-Card" \
         jq -r '.data.repository.discussionCategory.discussions.nodes[] | 
               (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
