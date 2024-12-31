@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Run create-discussion-comment
-      uses: wesleyscholl/create-discussion-comment@v1.0.x
+      uses: wesleyscholl/create-discussion-comment@v1.0.18
       id: create-comment
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
