@@ -3,23 +3,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  find-discussions:
+  notify-inactive-discussions:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.find.outputs.matrix }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Find Inactive Discussions
-      id: find
+    - name: Process Discussions and Add Comments
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Define the category name
         CATEGORY_NAME="Questions about config, custom styles and templates"
         
-        # Fetch discussions
+        # Fetch discussions and process them one by one
         gh api graphql -f query='
         query($owner: String!, $repo: String!) {
           repository(owner: $owner, name: $repo) {
@@ -32,35 +29,20 @@ jobs:
                 category {
                   name
                 }
-                labels(first: 10) {
-                  nodes {
-                    name
-                  }
-                }
               }
             }
           }
-        }' -f owner="MrBearPresident" -f repo="Bubble-Card" > discussions.json
-        
-        # Process discussions and create matrix output
-        echo "matrix=$(cat discussions.json | \
-          jq --arg category "$CATEGORY_NAME" -c '
-            .data.repository.discussions.nodes | 
-            map(select(.category.name == $category)) | 
-            map(select((now - (.updatedAt | fromdateiso8601)) > 60)) | 
-            map(.id)')" >> $GITHUB_OUTPUT
+        }' -f owner="MrBearPresident" -f repo="Bubble-Card" | \
+        jq --arg category "$CATEGORY_NAME" -r '.data.repository.discussions.nodes[] | 
+            select(.category.name == $category) | 
+            select((now - (.updatedAt | fromdateiso8601)) > 60) | 
+            .id' > filtered_discussions.txt
 
-  create-comments:
-    needs: find-discussions
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        discussion_id: ${{ fromJson(needs.find-discussions.outputs.matrix) }}
-    steps:
-    - name: Create Comment
+    - name: Create Comments
+      if: success()
       uses: wesleyscholl/create-discussion-comment@v1.0.x
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         body: "This discussion has been inactive for over 60 seconds. Please update with any additional information if your question hasn't been resolved."
-        discussion-id: ${{ matrix.discussion_id }}
-        client-mutation-id: ${{ github.run_id }}-${{ matrix.discussion_id }}
+        discussion-id: ${{ cat filtered_discussions.txt }}
+        client-mutation-id: ${{ github.run_id }}
