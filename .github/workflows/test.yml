@@ -17,7 +17,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Define the category name
-        CATEGORY_NAME="Questions about config, custom styles and templates"
+        CATEGORY_NAME="questions-about-config-custom-styles-and-templates"
         
         # Fetch discussions
         gh api graphql -f query='
