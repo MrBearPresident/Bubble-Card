@@ -51,7 +51,7 @@ jobs:
         # Comment on each inactive discussion
         if [ -s filtered_discussions.txt ]; then
           while read -r url; do
-            gh issue comment --repo MrBearPresident/Bubble-Card --body "This discussion has been inactive for over a minute. Please check if further action is needed." "$url"
+            gh discussion comment --repo MrBearPresident/Bubble-Card --body "This discussion has been inactive for over a minute. Please check if further action is needed." "$url"
           done < filtered_discussions.txt
         else
           echo "No discussions found that are older than 60 seconds."
