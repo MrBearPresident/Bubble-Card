@@ -1,4 +1,4 @@
-name: Comment
+name: comment
 on:
   workflow_dispatch:
 
@@ -39,27 +39,25 @@ jobs:
           }
         }' -f owner="MrBearPresident" -f repo="Bubble-Card" > discussions.json
         
-        # Process discussions and create comments
+        # Process discussions and save IDs
         cat discussions.json | \
         jq --arg category "$CATEGORY_NAME" -r '.data.repository.discussions.nodes[] | 
             select(.category.name == $category) | 
             select((now - (.updatedAt | fromdateiso8601)) > 60) | 
-            {id: .id, url: .url}' > filtered_discussions.json
-        
-        # Add comments to each discussion
-        while IFS= read -r line; do
-          discussion_id=$(echo "$line" | jq -r '.id')
-          discussion_url=$(echo "$line" | jq -r '.url')
+            .id' > filtered_discussions.txt
+
+    - name: Add Comments to Discussions
+      if: success()
+      run: |
+        while IFS= read -r discussion_id; do
+          echo "discussion_id=$discussion_id" >> $GITHUB_ENV
+          echo "client_mutation_id=$(uuidgen)" >> $GITHUB_ENV
           
-          # Create comment using GraphQL mutation
-          gh api graphql -f query='
-          mutation($discussionId: ID!, $body: String!) {
-            addDiscussionComment(input: {discussionId: $discussionId, body: $body}) {
-              comment {
-                id
-              }
-            }
-          }' -f discussionId="$discussion_id" -f body="This discussion has been inactive for over 60 seconds. Please update with any additional information if your question hasn't been resolved."
-          
-          echo "Added comment to discussion: $discussion_url"
-        done < <(jq -c '.[]' filtered_discussions.json)
+          - name: Create Comment
+            uses: wesleyscholl/create-discussion-comment@v1.0.x
+            with:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              body: "This discussion has been inactive for over 60 seconds. Please update with any additional information if your question hasn't been resolved."
+              discussion-id: ${{ env.discussion_id }}
+              client-mutation-id: ${{ env.client_mutation_id }}
+        done < filtered_discussions.txt
