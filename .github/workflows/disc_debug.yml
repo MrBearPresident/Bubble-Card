@@ -11,14 +11,14 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Debug Find Inactive Discussions Older Than 60 Seconds
+    - name: Notify Inactive Discussions Older Than 60 Seconds
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Define the category name
         CATEGORY_NAME="Questions about config, custom styles and templates"
 
-        # Fetch and debug discussions
+        # Fetch discussions
         gh api graphql -f query='
         query($owner: String!, $repo: String!) {
           repository(owner: $owner, name: $repo) {
@@ -41,9 +41,18 @@ jobs:
           }
         }' -f owner="MrBearPresident" -f repo="Bubble-Card" > discussions.json
 
-        # Filter discussions using jq for category and time threshold (60 seconds)
+        # Process discussions
         cat discussions.json | \
         jq --arg category "$CATEGORY_NAME" -r '.data.repository.discussions.nodes[] | 
             select(.category.name == $category) | 
             select((now - (.updatedAt | fromdateiso8601)) > 60) | 
-            (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
+            .url' > filtered_discussions.txt
+
+        # Comment on each inactive discussion
+        if [ -s filtered_discussions.txt ]; then
+          while read -r url; do
+            gh issue comment --repo MrBearPresident/Bubble-Card --body "This discussion has been inactive for over a minute. Please check if further action is needed." "$url"
+          done < filtered_discussions.txt
+        else
+          echo "No discussions found that are older than 60 seconds."
+        fi
