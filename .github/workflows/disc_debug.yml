@@ -1,0 +1,41 @@
+name: DBEUG_Notify Inactive Discussions in Specific Category
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  notify-inactive-discussions:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Debug Find Inactive Discussions
+      run: |
+        # Define the category slug
+        CATEGORY_NAME="questions-about-config-custom-styles-and-templates"
+
+        # Fetch and debug discussions
+        gh api graphql -f query='
+        query($owner: String!, $repo: String!, $category: String!) {
+          repository(owner: $owner, name: $repo) {
+            discussionCategory(slug: $category) {
+              discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                nodes {
+                  id
+                  title
+                  url
+                  updatedAt
+                  labels(first: 10) {
+                    nodes {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }' -f owner="MrBearPresident" -f repo="Bubble-Card" -f category="$CATEGORY_NAME" | \
+        jq -r '.data.repository.discussionCategory.discussions.nodes[] | 
+              (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
