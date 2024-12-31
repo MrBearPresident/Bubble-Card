@@ -11,11 +11,11 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Debug Find Inactive Discussions
+    - name: Debug Find Inactive Discussions Older Than 60 Seconds
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Define the category slug
+        # Define the category name
         CATEGORY_NAME="Questions about config, custom styles and templates"
 
         # Fetch and debug discussions
@@ -41,8 +41,9 @@ jobs:
           }
         }' -f owner="MrBearPresident" -f repo="Bubble-Card" > discussions.json
 
-        # Process and filter discussions using jq
+        # Filter discussions using jq for category and time threshold (60 seconds)
         cat discussions.json | \
         jq --arg category "$CATEGORY_NAME" -r '.data.repository.discussions.nodes[] | 
             select(.category.name == $category) | 
+            select((now - (.updatedAt | fromdateiso8601)) > 60) | 
             (.url, .updatedAt, (now - (.updatedAt | fromdateiso8601)))'
