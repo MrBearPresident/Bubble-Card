@@ -1,0 +1,18 @@
+name: Comment2
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  notify-inactive-discussions:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Run create-discussion-comment
+      uses: wesleyscholl/create-discussion-comment@v1.0.18
+      id: create-comment
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: "This is a test comment from a GitHub action"          
+        discussion-id: 'D_kwDONU-ILc4Adn1K'
+        client-mutation-id: '1234'
