@@ -55,7 +55,7 @@ jobs:
             discussion_number=$(echo "$url" | grep -oE '[0-9]+$')
 
             # Add a comment to the discussion
-            gh issue comment --repo MrBearPresident/Bubble-Card --body "This discussion has been inactive for over a minute. Please check if further action is needed." $discussion_number
+            gh issue edit --repo MrBearPresident/Bubble-Card --add-label "stale" $discussion_number
           done < filtered_discussions.txt
         else
           echo "No discussions found that are older than 60 seconds."
