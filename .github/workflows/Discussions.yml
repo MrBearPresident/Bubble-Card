@@ -16,7 +16,7 @@ jobs:
     - name: Find and Label Inactive Discussions in Specific Category
       run: |
         # Define the category name
-        CATEGORY_NAME="Questions about config, custom styles and templates"
+        CATEGORY_NAME="questions-about-config-custom-styles-and-templates"
 
         # Get discussions in the specified category that haven't been updated in the last 30 days
         gh api graphql -f query='
