@@ -1,0 +1,64 @@
+name: Notify Inactive Discussions in Specific Category
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  notify-inactive-discussions:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Find and Label Inactive Discussions in Specific Category
+      run: |
+        # Define the category name
+        CATEGORY_NAME="Questions about config, custom styles and templates"
+
+        # Get discussions in the specified category that haven't been updated in the last 30 days
+        gh api graphql -f query='
+        query($owner: String!, $repo: String!, $category: String!) {
+          repository(owner: $owner, name: $repo) {
+            discussionCategory(slug: $category) {
+              discussions(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                nodes {
+                  id
+                  title
+                  url
+                  updatedAt
+                  labels(first: 10) {
+                    nodes {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }' -f owner="MrBearPresident" -f repo="Bubble-Card" -f category="$CATEGORY_NAME" | \
+        jq -r '.data.repository.discussionCategory.discussions.nodes[] | 
+              select((now - (.updatedAt | fromdateiso8601)) > 60 and (.labels.nodes[].name // [] | index("stale") | not))' > inactive_discussions.txt
+
+        # Notify and label inactive discussions
+        if [ -s inactive_discussions.txt ]; then
+          while read -r discussion; do
+            id=$(echo "$discussion" | jq -r '.id')
+            url=$(echo "$discussion" | jq -r '.url')
+
+            # Add 'stale' label
+            gh api graphql -f query='
+            mutation($id: ID!) {
+              addLabelsToLabelable(input: {labelableId: $id, labelIds: ["stale"]}) {
+                clientMutationId
+              }
+            }' -f id="$id"
+
+            # Notify in discussion
+            gh issue comment --repo MrBearPresident/Bubble-Card --body "This discussion has been inactive for over a month and has been marked as stale: $url" "$url"
+          done < inactive_discussions.txt
+        else
+          echo "No inactive discussions found in the specified category."
+        fi
